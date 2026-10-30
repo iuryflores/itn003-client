@@ -6,6 +6,7 @@ export type Decision = 'keep' | 'exclude';
 export type Decisions = Record<number, Decision>;
 export type Preparation = {
   kind: 'itn003-preparation'; version: 1; registry?:Registry; name?:string; file: string; raw: string;
+  fieldOverrides?:Record<number,Record<string,unknown>>;
   taxOverrides?:Record<number,TaxOverride>;
   classifications?:Record<number,number>;
   decisions: Decisions; reasons: Record<number, string>;
