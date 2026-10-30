@@ -1,15 +1,16 @@
+import type {Registry} from './registry';
 import { useEffect, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 
 type Minute={id:string;title:string|null;text:string|null;tooLarge:boolean;source:string;fetchedAt:string};
 const allowedTags=['p','br','div','span','strong','b','em','i','u','s','sub','sup','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','pre','code','table','thead','tbody','tfoot','tr','td','th','hr'];
-export function MinuteViewer({actId,autoOpen=false}:{actId:string;autoOpen?:boolean}) {
+export function MinuteViewer({registry,actId,autoOpen=false}:{registry:Registry;actId:string;autoOpen?:boolean}) {
  const [minute,setMinute]=useState<Minute|null>(null);
  const [open,setOpen]=useState(false);
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const controller=useRef<AbortController|null>(null);
- useEffect(()=>{if(autoOpen)void load();return ()=>controller.current?.abort();},[actId,autoOpen]);
+ useEffect(()=>{if(autoOpen)void load();return ()=>controller.current?.abort();},[registry,actId,autoOpen]);
  async function load() {
   setOpen(true);
   if(minute)return;
@@ -17,7 +18,7 @@ export function MinuteViewer({actId,autoOpen=false}:{actId:string;autoOpen?:bool
   const abort=new AbortController();controller.current=abort;
   setBusy(true);setError('');
   try {
-   const response=await fetch(`/api/legacy/acts/${encodeURIComponent(actId)}/minute`,{signal:abort.signal,cache:'no-store'});
+   const response=await fetch(`/api/legacy/acts/${encodeURIComponent(actId)}/minute?registry=${registry}`,{signal:abort.signal,cache:'no-store'});
    const value=await response.json();
    if(!response.ok)throw new Error(value.message??'Não foi possível carregar a minuta.');
    if(!abort.signal.aborted)setMinute(value);

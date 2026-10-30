@@ -1,7 +1,12 @@
+import {isRegistry} from './registry.ts';
+import type {Registry} from './registry.ts';
+import {readTaxOverrides} from './tax-overrides.ts';
+import type {TaxOverride} from './tax-overrides.ts';
 export type Decision = 'keep' | 'exclude';
 export type Decisions = Record<number, Decision>;
 export type Preparation = {
-  kind: 'itn003-preparation'; version: 1; name?:string; file: string; raw: string;
+  kind: 'itn003-preparation'; version: 1; registry?:Registry; name?:string; file: string; raw: string;
+  taxOverrides?:Record<number,TaxOverride>;
   classifications?:Record<number,number>;
   decisions: Decisions; reasons: Record<number, string>;
 };
@@ -24,6 +29,7 @@ export function readPreparation(value:unknown):Preparation {
   if(!value||typeof value!=='object')throw new Error('Preparação inválida.');
   const draft=value as Record<string,unknown>;
   if(draft.kind!=='itn003-preparation'||draft.version!==1||typeof draft.raw!=='string'||typeof draft.file!=='string')throw new Error('Formato de preparação inválido ou versão não suportada.');
+  if(draft.registry!==undefined&&!isRegistry(draft.registry))throw new Error('Cartório inválido na preparação.');
   if(draft.name!==undefined&&(typeof draft.name!=='string'||draft.name.length>160))throw new Error('Nome da auditoria inválido.');
   let source;
   try{source=JSON.parse(draft.raw.replace(/^\uFEFF/,''));}catch{throw new Error('O arquivo original da preparação está inválido.');}
@@ -44,5 +50,5 @@ export function readPreparation(value:unknown):Preparation {
    const index=Number(key);
    if(!/^\d+$/.test(key)||!Number.isSafeInteger(index)||String(index)!==key||index>=count||!source.imoveis[index]||typeof source.imoveis[index]!=='object'||Array.isArray(source.imoveis[index])||typeof value!=='number'||!Number.isInteger(value)||value<1||value>6)throw new Error('Classificação inválida na preparação.');
   }
-  return {...draft,classifications} as unknown as Preparation;
+  return {...draft,classifications,taxOverrides:readTaxOverrides(draft.taxOverrides,source.imoveis)} as unknown as Preparation;
 }

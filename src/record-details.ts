@@ -15,3 +15,12 @@ export function geographicDetails(data:unknown) {
  };
 }
 export function isOtherAct(data:unknown) { return record(data).ato===6; }
+export function compactActReference(data:unknown) {
+ const source=record(data);
+ const actNumber=typeof source.numero_ato==='string'?source.numero_ato.trim():'';
+ if(/^0+$/.test(actNumber))return 'M-0';
+ const registryNumber=source.tipo_matricula_transcricao===1?source.numero_matricula:source.tipo_matricula_transcricao===2?source.numero_transcricao:undefined;
+ const prefix=source.tipo_ato===2?'AV':source.tipo_ato===1?'R':null;
+ if(!prefix||!actNumber||typeof registryNumber!=='string'||!registryNumber.trim())return 'Identificação incompleta';
+ return `${prefix}-${actNumber}-${registryNumber}`;
+}

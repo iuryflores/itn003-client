@@ -90,3 +90,13 @@ Dê um **Nome da auditoria** para cada importação, por exemplo “Março/2026�
 Em **Revisar**, escolha a opção na seção **Classificação do ato** e clique em **Aplicar classificação**. É o campo `ato` (códigos 1 a 6), separado de `tipo_ato` (Registro/Averbação) e de `numero_ato`. A mudança refaz a auditoria e atualiza as pendências condicionais. Nenhum subtipo ou valor ausente é inventado automaticamente.
 
 O ato volta à fila de revisão após uma mudança. **Restaurar original** remove a alteração e refaz a auditoria. Use **Salvar andamento** ou **Baixar preparação** para guardar as mudanças. Elas são aplicadas ao JSON final, sem modificar o arquivo de origem nem o PostgreSQL legado.
+
+### Valor de avaliação do legado
+
+Após consultar os atos, a seção **Valor de avaliação no legado** aparece em **Revisar** e no modal da minuta. Cada valor mantém seu campo de origem; quando nenhum dos caminhos consultados tiver conteúdo, a tela informa isso. A consulta não preenche nem elimina a pendência de `valor_imposto`, que representa o imposto ITBI/ITCMD. Atualize a consulta do legado para obter os novos campos.
+
+O valor de avaliação do legado pode ser aplicado manualmente como `valor_imposto` pelo botão **Usar como valor do imposto**, na minuta ou na revisão. A escolha registra a origem, recalcula as pendências, volta o ato à fila e acompanha o andamento salvo e o JSON final. **Restaurar valor do arquivo original** desfaz a alteração. Não há preenchimento automático nem escrita no PostgreSQL.
+
+O botão **Consultar campos ITN003** abre a referência de preenchimento, mesmo sem importar um arquivo. Inclui busca, filtros rural/urbano e obrigatório/condicional/opcional, observações dos manuais e referências aos schemas 1.3.0. A classificação considera exceções e estruturas aninhadas; a validação completa de cada ato continua sendo feita pela auditoria.
+
+Selecione **1RIGO** ou **2RIGO** antes de importar. Cada auditoria salva mantém o seu cartório; uma auditoria antiga sem identificação deve ser vinculada pela seleção em tela e salva novamente. Ao trocar de cartório, o andamento atual é salvo e o arquivo aberto é fechado. As conexões são configuradas somente no `server/.env`, em `1RIGO_POSTGRES_CONNECTION_STRING` e `2RIGO_POSTGRES_CONNECTION_STRING`; não há fallback para a variável antiga. Os endpoints do legado exigem `registry` na query de GETs ou no corpo de `POST /api/legacy/context`. O JSON final mantém o layout oficial, sem adicionar o cartório.
