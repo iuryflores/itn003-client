@@ -2,12 +2,15 @@ import {isRegistry} from './registry.ts';
 import type {Registry} from './registry.ts';
 import {readTaxOverrides} from './tax-overrides.ts';
 import type {TaxOverride} from './tax-overrides.ts';
+export type FieldEdit={index?:number;path:string;value:string|null};
 export type Decision = 'keep' | 'exclude';
 export type Decisions = Record<number, Decision>;
 export type Preparation = {
   kind: 'itn003-preparation'; version: 1; registry?:Registry; name?:string; file: string; raw: string;
   taxOverrides?:Record<number,TaxOverride>;
   classifications?:Record<number,number>;
+  propertyChanges?:Record<number,number>;
+  fieldEdits?:FieldEdit[];
   decisions: Decisions; reasons: Record<number, string>;
 };
 export function reviewCounts(indices:number[], decisions:Decisions) {
@@ -50,5 +53,17 @@ export function readPreparation(value:unknown):Preparation {
    const index=Number(key);
    if(!/^\d+$/.test(key)||!Number.isSafeInteger(index)||String(index)!==key||index>=count||!source.imoveis[index]||typeof source.imoveis[index]!=='object'||Array.isArray(source.imoveis[index])||typeof value!=='number'||!Number.isInteger(value)||value<1||value>6)throw new Error('Classificação inválida na preparação.');
   }
-  return {...draft,classifications,taxOverrides:readTaxOverrides(draft.taxOverrides,source.imoveis)} as unknown as Preparation;
+  const propertyChanges=draft.propertyChanges===undefined?{}:draft.propertyChanges;
+  if(!propertyChanges||typeof propertyChanges!=='object'||Array.isArray(propertyChanges))throw new Error('Tipos de alteração do imóvel inválidos na preparação.');
+  for(const [key,value] of Object.entries(propertyChanges)){
+    const index=Number(key);
+    const record=source.imoveis[index];
+    const act=(classifications as Record<number,number>)[index]??record?.ato;
+    if(!/^\d+$/.test(key)||!Number.isSafeInteger(index)||String(index)!==key||!record||act!==5||typeof value!=='number'||!Number.isInteger(value)||value<1||value>12){
+      throw new Error('Tipo de alteração do imóvel inválido na preparação.');
+    }
+  }
+  const fieldEdits=draft.fieldEdits===undefined?[]:draft.fieldEdits;
+  if(!Array.isArray(fieldEdits))throw new Error('Correções de campos inválidas na preparação.');
+  return {...draft,classifications,propertyChanges,fieldEdits,taxOverrides:readTaxOverrides(draft.taxOverrides,source.imoveis)} as unknown as Preparation;
 }

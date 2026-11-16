@@ -15,6 +15,30 @@ export function geographicDetails(data:unknown) {
  };
 }
 export function isOtherAct(data:unknown) { return record(data).ato===6; }
+
+export const sharedPropertyFields=new Set(['/cod_sncr','/car','/cib']);
+
+export function propertyEditTargets(items:{index:number;data:unknown}[],index:number,path:string) {
+ if(!sharedPropertyFields.has(path))return [index];
+ const source=record(items.find(item=>item.index===index)?.data);
+ const number=matriculaNumber(source);
+ if(!number)return [index];
+ const matches=items.filter(item=>matriculaNumber(record(item.data))===number);
+ const identifiers=new Set(matches.map(item=>cnm(record(item.data))).filter(Boolean));
+ if(identifiers.size<=1)return matches.map(item=>item.index);
+ const sourceCnm=cnm(source);
+ return sourceCnm?matches.filter(item=>cnm(record(item.data))===sourceCnm).map(item=>item.index):[index];
+}
+
+function matriculaNumber(source:Record<string,unknown>) {
+ const value=source.numero_matricula;
+ if(source.tipo_matricula_transcricao!==1||typeof value!=='string'||!/^\d{1,10}$/.test(value.trim()))return '';
+ return value.trim().replace(/^0+/,'');
+}
+
+function cnm(source:Record<string,unknown>) {
+ return typeof source.cnm==='string'?source.cnm.replace(/[.\-\s]/g,''):'';
+}
 export function compactActReference(data:unknown) {
  const source=record(data);
  const actNumber=typeof source.numero_ato==='string'?source.numero_ato.trim():'';

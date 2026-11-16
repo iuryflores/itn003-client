@@ -1,6 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { geographicDetails, isOtherAct } from '../src/record-details.ts';
+import { geographicDetails, isOtherAct, propertyEditTargets } from '../src/record-details.ts';
+test('property corrections follow the matrícula across acts and respect conflicting CNMs',()=>{
+ const items=[
+  {index:0,data:{tipo_matricula_transcricao:1,numero_matricula:'00123',cnm:'012345.2.0000123-10'}},
+  {index:1,data:{tipo_matricula_transcricao:1,numero_matricula:'123'}},
+  {index:2,data:{tipo_matricula_transcricao:2,numero_transcricao:'123'}},
+  {index:3,data:{tipo_matricula_transcricao:1,numero_matricula:'124'}},
+ ];
+ for(const field of ['/cod_sncr','/car','/cib'])assert.deepEqual(propertyEditTargets(items,0,field),[0,1]);
+ assert.deepEqual(propertyEditTargets(items,0,'/data_ato'),[0]);
+ assert.deepEqual(propertyEditTargets(items,2,'/car'),[2]);
+ items.push({index:4,data:{tipo_matricula_transcricao:1,numero_matricula:'123',cnm:'999999.2.0000123-10'}});
+ assert.deepEqual(propertyEditTargets(items,0,'/car'),[0]);
+ assert.deepEqual(propertyEditTargets(items,1,'/car'),[1]);
+});
 test('georeferencing uses explicit declaration and does not infer it from other fields',()=>{
  assert.equal(geographicDetails({georreferenciamento:true}).label,'Sim');
  assert.equal(geographicDetails({georreferenciamento:false,certificacao_incra:true,numero_poligono:5,coordenadas:'[1,2]'}).label,'Não');
