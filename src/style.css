@@ -51,3 +51,5 @@
 .pending-field-editor button{font-size:11px;padding:8px 11px}
 .root-errors .pending-field-editor{max-width:360px;margin-bottom:12px}
 .required-fields{margin:0 0 20px}.required-fields summary{cursor:pointer;color:#344f43;font-size:14px;font-weight:700}
+.pending-fields-editor{border:1px solid var(--line,#ddd);border-radius:12px;padding:18px;margin-bottom:20px}.pending-field{margin:18px 0;padding-top:12px;border-top:1px solid #ddd}.pending-field label{display:grid;gap:8px;font-weight:600}.pending-field input,.pending-field textarea{width:100%;box-sizing:border-box}.pending-field textarea{min-height:110px;font-family:monospace}.pending-field .actions{margin-top:10px;flex-wrap:wrap}
+.format-example{padding:10px;background:#f1f6f3;border-radius:6px}.format-example small,.pending-group li small{display:block;margin-top:5px}.pending-field small{display:block;margin-top:6px}

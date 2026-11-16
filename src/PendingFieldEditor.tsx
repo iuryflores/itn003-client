@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {sharedPropertyFields} from './record-details';
 
-export type EditableIssue={path:string;rule:string;message?:string;types?:string[]};
+export type EditableIssue={path:string;rule:string;message?:string;types?:string[];example?:string};
 type Props={
  issue:EditableIssue;
  data:unknown;
@@ -74,6 +74,7 @@ export function PendingFieldEditor({issue,data,disabled,onApply}:Props){
      placeholder={mode==='array'?'[ ]':mode==='object'?'{ }':'Valor em JSON'}/>:<input value={value} disabled={disabled}
      inputMode={mode==='number'||mode==='integer'?'decimal':undefined} onChange={event=>setValue(event.target.value)}/>}
    </label>)}
+  {issue.example&&<small>Exemplo de formato <code>{issue.example}</code></small>}
   {sncr&&<small>12 ou 13 dígitos. Também aceita o formato 000.000.000.000-0.</small>}
   {sharedPropertyFields.has(path)&&<small>A correção também vale para os outros atos da mesma matrícula nesta auditoria.</small>}
   {rule!=='additionalProperties'&&!area&&['array','object','json'].includes(mode)&&
